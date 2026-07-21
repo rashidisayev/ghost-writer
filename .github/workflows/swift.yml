@@ -1,22 +1,129 @@
-# This workflow will build a Swift project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-swift
-
-name: Swift
+name: CI
 
 on:
   push:
     branches: [ "main" ]
+    tags: [ "v*" ]
   pull_request:
     branches: [ "main" ]
+  workflow_dispatch:
+
+# A second push to the same branch makes the first run irrelevant.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
-
+  test:
+    name: Build & test
     runs-on: macos-latest
-
     steps:
-    - uses: actions/checkout@v4
-    - name: Build
-      run: swift build -v
-    - name: Run tests
-      run: swift test -v
+      - uses: actions/checkout@v4
+
+      - name: Toolchain versions
+        run: |
+          swift --version
+          xcodebuild -version
+
+      - name: Build (debug)
+        run: swift build -v
+
+      - name: Run tests
+        run: swift test -v
+
+      # The release configuration optimises differently, and it is what ships,
+      # so it has to compile even when the debug build does.
+      - name: Build (release)
+        run: swift build -c release
+
+      # The app was renamed; this fails the build if a reference creeps back
+      # in. The pattern is assembled at runtime so the step cannot match its
+      # own source file.
+      - name: Naming guard
+        run: |
+          OLD="$(printf 'Q')uill"
+          if grep -rIn --exclude-dir=.git --exclude-dir=.build -e "$OLD" -e 'com\.quill' .; then
+            echo "::error::Found references to the old app name (see matches above)"
+            exit 1
+          fi
+          echo "No stale references."
+
+  package:
+    name: Package app & DMG
+    needs: test
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Assemble app bundle
+        run: ./Scripts/build-app.sh release
+
+      # These properties are what make this an agent rather than a normal app.
+      # A missing LSUIElement puts it in the Dock, a missing icon ships the
+      # generic one, a wrong executable name produces a bundle that cannot
+      # launch, and a changed bundle id silently revokes the user's
+      # Accessibility grant. None of those fail the compile.
+      - name: Verify bundle invariants
+        run: |
+          set -euo pipefail
+          APP=build/GhostWriter.app
+          PLIST="$APP/Contents/Info.plist"
+
+          test -x "$APP/Contents/MacOS/GhostWriter" \
+            || { echo "::error::missing or non-executable binary"; exit 1; }
+          test -f "$APP/Contents/Resources/GhostWriter.icns" \
+            || { echo "::error::missing app icon"; exit 1; }
+
+          ui_element=$(/usr/libexec/PlistBuddy -c 'Print :LSUIElement' "$PLIST")
+          [ "$ui_element" = "true" ] \
+            || { echo "::error::LSUIElement is '$ui_element'; the app would show a Dock icon"; exit 1; }
+
+          bundle_id=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$PLIST")
+          [ "$bundle_id" = "com.ghostwriter.app" ] \
+            || { echo "::error::bundle id is '$bundle_id'; changing it revokes the Accessibility grant"; exit 1; }
+
+          # macOS attaches com.apple.provenance and com.apple.FinderInfo to a
+          # bundle after it is signed, and --strict rejects a bundle carrying
+          # them. Strip first; extended attributes are not covered by the
+          # signature, so removing them leaves it valid.
+          xattr -cr "$APP"
+
+          # Checked explicitly rather than leaning on `set -e`: codesign exits
+          # non-zero here without aborting the step, which would turn this
+          # verification into decoration.
+          if ! codesign --verify --deep --strict "$APP"; then
+            echo "::error::app fails signature verification"
+            exit 1
+          fi
+          echo "Bundle OK: $bundle_id"
+
+      - name: Build DMG
+        run: ./Scripts/make-dmg.sh
+
+      - name: Verify DMG mounts and installs
+        run: |
+          set -euo pipefail
+          DMG=$(ls build/GhostWriter-*.dmg | head -1)
+          MOUNT=$(hdiutil attach "$DMG" -nobrowse -readonly | tail -1 | sed 's/.*\(\/Volumes\/.*\)/\1/')
+          trap 'hdiutil detach "$MOUNT" -quiet || true' EXIT
+
+          test -d "$MOUNT/GhostWriter.app" \
+            || { echo "::error::no app in the disk image"; exit 1; }
+          test -L "$MOUNT/Applications" \
+            || { echo "::error::no /Applications symlink; drag-to-install would not work"; exit 1; }
+
+          # The image is read-only, so nothing can have been added to the app
+          # since packaging — this is the signature a user actually receives.
+          if ! codesign --verify --deep --strict "$MOUNT/GhostWriter.app"; then
+            echo "::error::the shipped app fails signature verification"
+            exit 1
+          fi
+          echo "DMG OK: $DMG"
+
+      - name: Upload DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: GhostWriter-dmg
+          path: build/*.dmg
+          if-no-files-found: error
+          retention-days: 30

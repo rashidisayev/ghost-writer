@@ -225,3 +225,38 @@ final class UnicodeRangeTests: XCTestCase {
         assertRangeMatchesBody("Это довольно длинный абзац для проверки диапазона.")
     }
 }
+
+final class ModelConfigurationTests: XCTestCase {
+    /// Guards a costly regression. Omitting reasoning.effort defaults GPT-5.6
+    /// to "medium", which spends reasoning tokens and seconds on a style edit,
+    /// and "minimal" — valid on earlier families — is rejected by 5.6. Both
+    /// mistakes are invisible until the latency or the bill shows up.
+    func testEffortValuesAreValidAndCheap() {
+        let allowed: Set<String> = ["none", "low"]
+        for level in Aggressiveness.allCases {
+            XCTAssertTrue(
+                allowed.contains(level.effort),
+                "\(level) uses effort '\(level.effort)'; only none/low keep a rewrite interactive"
+            )
+        }
+    }
+
+    func testModelIdentifiersArePinned() {
+        XCTAssertEqual(RewriteModel.sol.apiIdentifier, "gpt-5.6-sol")
+        XCTAssertEqual(RewriteModel.terra.apiIdentifier, "gpt-5.6-terra")
+        XCTAssertEqual(RewriteModel.luna.apiIdentifier, "gpt-5.6-luna")
+    }
+
+    func testEveryModelHasADistinctDisplayName() {
+        let names = Set(RewriteModel.allCases.map(\.displayName))
+        XCTAssertEqual(names.count, RewriteModel.allCases.count)
+    }
+
+    /// max_output_tokens is derived from this; a zero would starve the request.
+    func testTokenEstimateHasAFloor() {
+        let request = RewriteRequest(
+            text: "", context: nil, tone: .neutral, aggressiveness: .balanced, model: .terra
+        )
+        XCTAssertGreaterThanOrEqual(request.approxInputTokens, 16)
+    }
+}

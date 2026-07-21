@@ -22,5 +22,9 @@ let package = Package(
             dependencies: ["GhostWriterCore", "GhostWriterStorage", "GhostWriterAccessibility", "GhostWriterAI", "GhostWriterInput", "GhostWriterUI"]
         ),
         .testTarget(name: "GhostWriterCoreTests", dependencies: ["GhostWriterCore"]),
+        .testTarget(
+            name: "GhostWriterAccessibilityTests",
+            dependencies: ["GhostWriterAccessibility"]
+        ),
     ]
 )
