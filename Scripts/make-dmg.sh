@@ -45,28 +45,36 @@ ln -s /Applications "$STAGE/Applications"
 cat > "$STAGE/READ ME FIRST.txt" <<'NOTE'
 Ghost Writer — installation
 
+This build is not notarized by Apple, so macOS blocks it by default. It is not
+damaged, and nothing is wrong with the download. Notarization requires a paid
+Apple Developer account, which this build does not have.
+
+Because of that, installing takes one extra step.
+
 1. Drag GhostWriter.app onto the Applications folder shown here.
-2. Open Applications and launch Ghost Writer.
+2. Try to open it from Applications. macOS will refuse.
+3. Open  System Settings > Privacy & Security  and scroll down. There will be
+   a message about GhostWriter being blocked, with an "Open Anyway" button.
+   Click it, then confirm.
 
-macOS will very likely refuse to open it the first time, saying the app is
-damaged or from an unidentified developer. That is Gatekeeper reacting to the
-fact that this build is not signed with a paid Apple Developer certificate. The
-app is not damaged.
+Note: right-clicking the app and choosing Open no longer works on macOS 15 and
+later. "Open Anyway" in System Settings is the supported route.
 
-To open it anyway:
-
-    Right-click GhostWriter.app  ->  Open  ->  Open
-
-If macOS still refuses, run this in Terminal:
+If you prefer the Terminal, this does the same thing in one command:
 
     xattr -dr com.apple.quarantine /Applications/GhostWriter.app
 
-Ghost Writer needs Accessibility permission to read and rewrite the text field you are
-typing in. It asks for this on first launch and explains why. It never reads
-password fields, terminals, or password managers.
+Only do this for software you trust. Ghost Writer asks for Accessibility
+permission, which lets it read what you type — that is a serious permission to
+grant to an app Apple has not verified. If you are not comfortable with that,
+do not install this build.
 
-You also need your own OpenAI API key, with credit on the account. Ghost Writer sends
-text directly to OpenAI — there is no Ghost Writer server.
+What it needs to work:
+
+  - Accessibility permission. It asks on first launch and explains why. It
+    never reads password fields, terminals, or password managers.
+  - Your own OpenAI API key, with credit on the account. Text goes directly
+    from your Mac to OpenAI; there is no Ghost Writer server.
 NOTE
 
 echo "==> Building disk image"

@@ -32,20 +32,45 @@ else
 	echo "warning: no Resources/GhostWriter.icns — bundle will use the generic icon" >&2
 fi
 
-# Ad-hoc signing is enough for local use. TCC keys the Accessibility grant to
-# the code signature, so re-signing with a different identity means re-granting.
-# Shipping needs "Developer ID Application" + notarization — see BUILD.md Step 6.
 # Copied files carry extended attributes (quarantine flags, Finder info), and
 # codesign --verify --strict rejects a bundle containing them: "resource fork,
 # Finder information, or similar detritus not allowed". Strip before signing —
 # afterwards would invalidate the signature.
 xattr -cr "$APP"
 
-echo "==> Signing (ad-hoc)"
-codesign --force --sign - \
-	--entitlements "$ROOT/Resources/GhostWriter.entitlements" \
-	--options runtime \
-	"$APP" 2>&1 | sed 's/^/    /'
+# Pick the strongest identity available.
+#
+# Only "Developer ID Application" produces a build that opens on someone else's
+# Mac. An "Apple Development" certificate is NOT a substitute — it is for
+# running on your own registered devices, cannot be notarized, and Gatekeeper
+# blocks it exactly like an ad-hoc signature. Set CODESIGN_IDENTITY to override.
+#
+# TCC keys the Accessibility grant to the code signature, so switching identity
+# means granting permission again.
+IDENTITY="${CODESIGN_IDENTITY:-}"
+if [ -z "$IDENTITY" ]; then
+	IDENTITY="$(security find-identity -v -p codesigning 2>/dev/null \
+		| grep 'Developer ID Application' | head -1 \
+		| sed 's/.*"\(.*\)".*/\1/' || true)"
+fi
+
+if [ -n "$IDENTITY" ]; then
+	echo "==> Signing as: $IDENTITY"
+	codesign --force --sign "$IDENTITY" \
+		--entitlements "$ROOT/Resources/GhostWriter.entitlements" \
+		--options runtime \
+		--timestamp \
+		"$APP" 2>&1 | sed 's/^/    /'
+	echo "    Distributable once notarized — run Scripts/notarize.sh"
+else
+	echo "==> Signing (ad-hoc — LOCAL USE ONLY)"
+	codesign --force --sign - \
+		--entitlements "$ROOT/Resources/GhostWriter.entitlements" \
+		--options runtime \
+		"$APP" 2>&1 | sed 's/^/    /'
+	echo "    No 'Developer ID Application' certificate found." >&2
+	echo "    This build will be blocked by Gatekeeper on every other Mac." >&2
+fi
 
 echo "==> Built $APP"
 codesign -dv "$APP" 2>&1 | sed 's/^/    /'
