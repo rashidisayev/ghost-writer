@@ -1,0 +1,17 @@
+# SwiftPM
+.build/
+.swiftpm/
+Package.resolved
+
+# Assembled app bundle — produced by Scripts/build-app.sh
+build/
+
+# Compiled probe binary — build with: swiftc -O main.swift -o ax-probe
+Tools/ax-probe/ax-probe
+
+# Generated iconset staging directory (the .icns itself IS committed, so a
+# fresh clone can build a bundle without running the generator first)
+Resources/Quill.iconset/
+
+# macOS
+.DS_Store
