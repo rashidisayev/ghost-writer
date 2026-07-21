@@ -17,6 +17,7 @@ public final class SettingsStore {
         static let model = "quill.model"
         static let paused = "quill.paused"
         static let excluded = "quill.excludedBundleIDs"
+        static let onboarded = "quill.hasCompletedOnboarding"
     }
 
     public var tone: ToneProfile {
@@ -30,6 +31,9 @@ public final class SettingsStore {
     }
     public var isPaused: Bool {
         didSet { defaults.set(isPaused, forKey: Key.paused) }
+    }
+    public var hasCompletedOnboarding: Bool {
+        didSet { defaults.set(hasCompletedOnboarding, forKey: Key.onboarded) }
     }
     public var excludedBundleIDs: Set<String> {
         didSet { defaults.set(Array(excludedBundleIDs), forKey: Key.excluded) }
@@ -45,6 +49,7 @@ public final class SettingsStore {
         model = defaults.string(forKey: Key.model)
             .flatMap(RewriteModel.init(rawValue:)) ?? .terra
         isPaused = defaults.bool(forKey: Key.paused)
+        hasCompletedOnboarding = defaults.bool(forKey: Key.onboarded)
         excludedBundleIDs = (defaults.array(forKey: Key.excluded) as? [String])
             .map(Set.init) ?? PolicyEngine.defaultExclusions
     }

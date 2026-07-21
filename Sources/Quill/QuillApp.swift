@@ -74,6 +74,8 @@ private struct MenuContent: View {
 
         Divider()
 
+        Button("Setup…") { OnboardingWindowController.shared.present() }
+
         Button("Copy diagnostics") {
             let pb = NSPasteboard.general
             pb.clearContents()
@@ -113,6 +115,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Follows focus and shows the highlight + rewrite button.
         FieldOverlay.shared.start()
+
+        // First run: explain, then ask. Note this shows a window rather than
+        // firing the TCC prompt directly at launch — see docs/10 §1, a prompt
+        // with no explanation in front of it is a prompt that gets denied.
+        OnboardingWindowController.shared.presentIfNeeded()
     }
 
     func applicationWillTerminate(_ notification: Notification) {

@@ -35,6 +35,12 @@ fi
 # Ad-hoc signing is enough for local use. TCC keys the Accessibility grant to
 # the code signature, so re-signing with a different identity means re-granting.
 # Shipping needs "Developer ID Application" + notarization — see BUILD.md Step 6.
+# Copied files carry extended attributes (quarantine flags, Finder info), and
+# codesign --verify --strict rejects a bundle containing them: "resource fork,
+# Finder information, or similar detritus not allowed". Strip before signing —
+# afterwards would invalidate the signature.
+xattr -cr "$APP"
+
 echo "==> Signing (ad-hoc)"
 codesign --force --sign - \
 	--entitlements "$ROOT/Resources/Quill.entitlements" \
