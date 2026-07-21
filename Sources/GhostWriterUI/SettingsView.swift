@@ -184,6 +184,17 @@ struct PermissionsSettingsView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+
+            Section {
+                Link("Buy me a coffee ☕", destination: SupportLinks.buyMeACoffee)
+                Link("Source on GitHub", destination: SupportLinks.repository)
+            } header: {
+                Text("Support")
+            } footer: {
+                Text("Ghost Writer is free and you pay OpenAI directly for what you use. Donations are entirely optional and change nothing about how the app behaves.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
         .formStyle(.grouped)
         .onReceive(poll) { _ in isTrusted = AXPermissions.isTrusted }

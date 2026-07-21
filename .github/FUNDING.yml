@@ -1,0 +1,4 @@
+# Renders the "Sponsor" button at the top of the repository page.
+# `custom` takes plain URLs, which is how a PayPal link is surfaced — GitHub
+# has no dedicated PayPal key.
+custom: ["https://www.paypal.com/donate/?business=rashidisayev%40gmail.com&item_name=Support%20Ghost%20Writer%20development&currency_code=EUR&no_recurring=0"]

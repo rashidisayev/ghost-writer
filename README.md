@@ -1,5 +1,7 @@
 # Ghost Writer
 
+[![CI](https://github.com/rashidisayev/ghost-writer/actions/workflows/swift.yml/badge.svg)](https://github.com/rashidisayev/ghost-writer/actions/workflows/swift.yml) [![Buy me a coffee](https://img.shields.io/badge/%E2%98%95-Buy%20me%20a%20coffee-FFDD00)](https://www.paypal.com/donate/?business=rashidisayev%40gmail.com&item_name=Support%20Ghost%20Writer%20development&currency_code=EUR&no_recurring=0)
+
 A background macOS agent that rewrites your prose in **any** editable text field, in **any** application — Slack, Mail, a browser, a native app — without changing how you work. Put the caret in a paragraph, press <kbd>⌥⌘K</kbd> or click the button that appears beside the field, and a suggestion card offers a cleaner version.
 
 No Dock icon, no window to switch to, no copy-paste round trip.
@@ -168,6 +170,20 @@ See [BUILD.md](BUILD.md) for the execution runbook, sequenced so every uncertain
 | 08 | [Roadmap](docs/08-roadmap.md) | MVP phases, v1.0 → v2.0, sequencing rationale |
 | 09 | [Risks & Limitations](docs/09-risks.md) | App Store, permission friction, AX fragility |
 | 10 | [Code Snippets](docs/10-code-snippets.md) | Reference Swift for the hardest components |
+
+---
+
+## Support
+
+Ghost Writer is free, and you pay OpenAI directly for what you use — there is no
+subscription and no server in between.
+
+If it saves you time and you'd like to say thanks:
+
+[**☕ Buy me a coffee**](https://www.paypal.com/donate/?business=rashidisayev%40gmail.com&item_name=Support%20Ghost%20Writer%20development&currency_code=EUR&no_recurring=0)
+
+Entirely optional. It changes nothing about how the app behaves, and no feature
+is held back behind it.
 
 ---
 

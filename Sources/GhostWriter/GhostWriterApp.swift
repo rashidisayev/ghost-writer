@@ -82,6 +82,12 @@ private struct MenuContent: View {
 
         Divider()
 
+        Button("Buy me a coffee ☕") {
+            NSWorkspace.shared.open(SupportLinks.buyMeACoffee)
+        }
+
+        Divider()
+
         SettingsLink { Text("Settings…") }
             .keyboardShortcut(",", modifiers: .command)
 
