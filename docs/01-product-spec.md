@@ -1,10 +1,10 @@
-# Quill — Product Specification
+# Ghost Writer — Product Specification
 
 > Working name. A system-wide, AI-native writing assistant for macOS, powered by Claude.
 
 ## 1. Product summary
 
-Quill is a background macOS agent that observes the text field the user is currently typing in, and offers rewrites that preserve meaning while improving grammar, clarity, structure, and tone — in whatever language the user is writing. It has no Dock icon, no window in the way, and no requirement that the user switch apps. It behaves like a system service.
+Ghost Writer is a background macOS agent that observes the text field the user is currently typing in, and offers rewrites that preserve meaning while improving grammar, clarity, structure, and tone — in whatever language the user is writing. It has no Dock icon, no window in the way, and no requirement that the user switch apps. It behaves like a system service.
 
 The differentiator versus Grammarly is not "AI" — Grammarly has AI. The differentiator is **tone profiles as first-class user-authored prompts**, **true multilingual parity** (a Russian email gets Russian-native rewriting, not English rules translated), and **a privacy posture where the user can see and control exactly what leaves the machine**.
 
@@ -32,9 +32,9 @@ The differentiator versus Grammarly is not "AI" — Grammarly has AI. The differ
 **Goal.** Detect the focused editable element in any application and read its current text and caret position.
 
 **Behaviour.**
-- On focus change, Quill resolves the focused `AXUIElement` and classifies it: native text field, native text view, web content area, Electron surrogate, terminal, unknown.
+- On focus change, Ghost Writer resolves the focused `AXUIElement` and classifies it: native text field, native text view, web content area, Electron surrogate, terminal, unknown.
 - Text is read via `kAXValueAttribute`; selection via `kAXSelectedTextRangeAttribute`; caret rect via the parameterized `kAXBoundsForRangeParameterizedAttribute`.
-- If the element does not expose a readable value (common in Terminal, some canvas-based editors, some games), Quill marks the app as **unsupported** for that surface and goes dormant. It does not fall back to keystroke logging.
+- If the element does not expose a readable value (common in Terminal, some canvas-based editors, some games), Ghost Writer marks the app as **unsupported** for that surface and goes dormant. It does not fall back to keystroke logging.
 
 **Triggers for a rewrite pass:**
 
@@ -45,7 +45,7 @@ The differentiator versus Grammarly is not "AI" — Grammarly has AI. The differ
 | Manual hotkey | `⌥Space` | fully rebindable |
 | Selection rewrite | User selects text, presses hotkey → rewrite selection only | fully rebindable |
 
-**Hard blocks — Quill never reads text when:**
+**Hard blocks — Ghost Writer never reads text when:**
 - `IsSecureEventInputEnabled()` is true (password fields, sudo prompts, 1Password)
 - The element has `kAXSubroleAttribute == kAXSecureTextFieldSubrole`
 - The frontmost app is in the user's exclusion list
@@ -54,7 +54,7 @@ The differentiator versus Grammarly is not "AI" — Grammarly has AI. The differ
 
 ### 4.2 AI rephrasing
 
-**Scope selection.** Quill rewrites the **current paragraph** by default (text between the nearest blank lines around the caret), not the whole field. This bounds latency, bounds cost, and bounds privacy exposure. Whole-field rewrite is an explicit action (`⌥⇧Space`).
+**Scope selection.** Ghost Writer rewrites the **current paragraph** by default (text between the nearest blank lines around the caret), not the whole field. This bounds latency, bounds cost, and bounds privacy exposure. Whole-field rewrite is an explicit action (`⌥⇧Space`).
 
 **Language handling.** No language selector in the hot path. The prompt instructs Claude to detect and reply in the source language. A local CLD-style detector (`NLLanguageRecognizer`, on-device, free) runs first only to (a) skip rewriting if confidence is low and text is < 15 chars, and (b) tag the suggestion in the UI. The model, not the detector, is authoritative.
 
@@ -86,9 +86,9 @@ Users create profiles from free text — *"Rewrite everything as if I were an ex
 
 ### 4.4 Suggestions UI
 
-Quill never mutates the field to show a suggestion. It draws an overlay.
+Ghost Writer never mutates the field to show a suggestion. It draws an overlay.
 
-- **Underline layer.** A borderless, click-through `NSPanel` at `.floating` level, `canJoinAllSpaces` + `fullScreenAuxiliary`, positioned using per-range rects from `kAXBoundsForRangeParameterizedAttribute`. Changed spans get a subtle underline. When per-range rects are unavailable (most web/Electron content), Quill degrades to a single caret-anchored indicator rather than drawing wrong.
+- **Underline layer.** A borderless, click-through `NSPanel` at `.floating` level, `canJoinAllSpaces` + `fullScreenAuxiliary`, positioned using per-range rects from `kAXBoundsForRangeParameterizedAttribute`. Changed spans get a subtle underline. When per-range rects are unavailable (most web/Electron content), Ghost Writer degrades to a single caret-anchored indicator rather than drawing wrong.
 - **Suggestion card.** A non-activating `NSPanel` anchored below the caret rect. Shows the rewritten paragraph with word-level diff highlighting (insertions green, deletions struck red), the active tone profile, and the detected language.
 - **Keyboard:** `Tab` accept · `Esc` reject · `⌘↩` request alternatives (3 variants, arrow keys to cycle) · `⌥↩` accept and pin this tone for the current app.
 
@@ -100,7 +100,7 @@ On accept, in order of preference:
 
 1. **AX set** — write `kAXValueAttribute` (or `kAXSelectedTextAttribute` for a ranged replace). Fast, no pasteboard involvement. Breaks undo in many apps and silently fails in most web content.
 2. **Synthetic paste** — save the pasteboard, set the rewrite, post `⌘V`, restore the pasteboard after a delay. Universal, preserves the app's native undo stack. This is the default for browsers and Electron.
-3. **Bail** — if neither is verified to have applied (Quill re-reads the field and compares), the suggestion is dropped and the user is told once.
+3. **Bail** — if neither is verified to have applied (Ghost Writer re-reads the field and compares), the suggestion is dropped and the user is told once.
 
 Cursor position is restored to `originalCaretOffset + (newLength - oldLength)` when the caret was at or after the rewritten span, or left in place when before it.
 

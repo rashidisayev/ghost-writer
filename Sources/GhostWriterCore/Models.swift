@@ -176,12 +176,12 @@ public enum ProviderError: Error, LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .missingKey:
-            "No API key. Open Quill Settings and paste an OpenAI API key."
+            "No API key. Open Ghost Writer Settings and paste an OpenAI API key."
         case .badResponse:
             "Unexpected response from the OpenAI API."
         case let .http(status, _, message, code):
             switch status {
-            case 401: "Invalid API key (401). Check the key in Quill Settings."
+            case 401: "Invalid API key (401). Check the key in Ghost Writer Settings."
             case 403: "This API key lacks permission for the selected model (403)."
             case 404: "Model not found (404). Pick a different model in Settings."
             case 429 where code == Self.quotaCode:

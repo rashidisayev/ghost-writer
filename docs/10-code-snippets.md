@@ -251,7 +251,7 @@ final class KeystrokeMonitor: @unchecked Sendable {
     func start() {
         let t = Thread { [weak self] in self?.runLoop() }
         t.qualityOfService = .userInteractive
-        t.name = "com.quill.keystroke-tap"
+        t.name = "com.ghostwriter.keystroke-tap"
         t.start()
         thread = t
     }
@@ -767,9 +767,9 @@ final class SuggestionPanel: NSPanel {
 }
 ```
 
-`orderFrontRegardless()` rather than `makeKeyAndOrderFront(_:)` is the load-bearing detail — the latter activates Quill, the host app loses focus, the caret stops blinking, and the illusion of a system service collapses.
+`orderFrontRegardless()` rather than `makeKeyAndOrderFront(_:)` is the load-bearing detail — the latter activates Ghost Writer, the host app loses focus, the caret stops blinking, and the illusion of a system service collapses.
 
-Because the panel never becomes key, `Tab` and `Esc` must be captured by a global hotkey handler that is registered only while a suggestion is showing, and unregistered the moment it is dismissed — otherwise Quill swallows `Tab` system-wide.
+Because the panel never becomes key, `Tab` and `Esc` must be captured by a global hotkey handler that is registered only while a suggestion is showing, and unregistered the moment it is dismissed — otherwise Ghost Writer swallows `Tab` system-wide.
 
 ---
 
@@ -779,7 +779,7 @@ Because the panel never becomes key, `Tab` and `Esc` must be captured by a globa
 import Security
 
 struct KeychainStore {
-    private let service = "com.quill.app.anthropic"
+    private let service = "com.ghostwriter.app.anthropic"
     private let account = "default"
 
     func store(apiKey: String) throws {

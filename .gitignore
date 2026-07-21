@@ -11,7 +11,7 @@ Tools/ax-probe/ax-probe
 
 # Generated iconset staging directory (the .icns itself IS committed, so a
 # fresh clone can build a bundle without running the generator first)
-Resources/Quill.iconset/
+Resources/GhostWriter.iconset/
 
 # macOS
 .DS_Store

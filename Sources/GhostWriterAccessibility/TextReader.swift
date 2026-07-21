@@ -1,6 +1,6 @@
 import AppKit
 import ApplicationServices
-import QuillCore
+import GhostWriterCore
 
 public struct TextSnapshot: Sendable {
     public let text: String
@@ -18,7 +18,7 @@ public struct TextSnapshot: Sendable {
 public enum TextReader {
 
     /// Focus within a specific process. Preferred over the system-wide element,
-    /// which resolves against the frontmost app — and that is Quill itself
+    /// which resolves against the frontmost app — and that is Ghost Writer itself
     /// whenever the rewrite was triggered from the menu bar item.
     public static func focusedElement(in pid: pid_t) -> AXUIElement? {
         let app = AXUIElementCreateApplication(pid)
@@ -44,7 +44,7 @@ public enum TextReader {
     /// Describes the focused field without reading a single character of it.
     /// Policy runs on this, before any text read.
     /// `bundleID` is passed in rather than read from `frontmostApplication`:
-    /// when the trigger came from Quill's own menu, the frontmost app is Quill,
+    /// when the trigger came from Ghost Writer's own menu, the frontmost app is Ghost Writer,
     /// and policy would evaluate the user's app exclusions against the wrong
     /// bundle identifier — quietly never matching.
     public static func describe(_ element: AXUIElement, bundleID: String?) -> FocusDescriptor {

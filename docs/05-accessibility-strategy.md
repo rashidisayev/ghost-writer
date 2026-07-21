@@ -80,7 +80,7 @@ This is the real spec. Every one of these behaviours is a separate code path.
 
 ## 5. Forcing accessibility on in Chromium, Electron, and Firefox
 
-These apps ship with their accessibility tree **off** for performance and build it lazily when an assistive client asks. Quill must ask, explicitly, per application:
+These apps ship with their accessibility tree **off** for performance and build it lazily when an assistive client asks. Ghost Writer must ask, explicitly, per application:
 
 ```swift
 // Electron apps (Slack, Discord, VS Code, Notion, Teams…)
@@ -93,8 +93,8 @@ AXUIElementSetAttributeValue(app, "AXEnhancedUserInterface" as CFString, kCFBool
 
 Both are private, undocumented attributes. They are also how every assistive technology on macOS works with these apps, so they are stable in practice — but treat them as a compatibility layer, not an API:
 
-- **Cost.** Enabling the tree makes the host app do real work on every DOM mutation. In a heavy Notion page or a large VS Code file this is measurable. Quill therefore enables it **lazily, per app, on first editable focus**, and disables it when the app has had no editable focus for 5 minutes.
-- **Side effects.** `AXEnhancedUserInterface` on Chromium historically caused window-resize glitches and is known to interact badly with some window managers. Ship a per-app override so a user hitting this can turn Quill off for that app rather than uninstalling.
+- **Cost.** Enabling the tree makes the host app do real work on every DOM mutation. In a heavy Notion page or a large VS Code file this is measurable. Ghost Writer therefore enables it **lazily, per app, on first editable focus**, and disables it when the app has had no editable focus for 5 minutes.
+- **Side effects.** `AXEnhancedUserInterface` on Chromium historically caused window-resize glitches and is known to interact badly with some window managers. Ship a per-app override so a user hitting this can turn Ghost Writer off for that app rather than uninstalling.
 - **Failure is expected.** If the attribute set fails or the tree is still empty 500ms later, mark the surface unsupported and go dormant. Never retry in a loop.
 
 ## 6. Writing text

@@ -61,7 +61,7 @@ public final class HotkeyManager {
 
     /// Returns a token used to unregister. Registering Tab/Esc globally is only
     /// safe while a suggestion is on screen — unregister the moment it's
-    /// dismissed, or Quill swallows Tab system-wide.
+    /// dismissed, or Ghost Writer swallows Tab system-wide.
     @discardableResult
     public func register(_ shortcut: Shortcut, action: @escaping () -> Void) -> UInt32? {
         let id = nextID

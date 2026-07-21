@@ -1,4 +1,4 @@
-# Ghost Writer (Quill)
+# Ghost Writer
 
 A background macOS agent that rewrites your prose in **any** editable text field, in **any** application — Slack, Mail, a browser, a native app — without changing how you work. Put the caret in a paragraph, press <kbd>⌥⌘K</kbd> or click the button that appears beside the field, and a suggestion card offers a cleaner version.
 
@@ -46,14 +46,14 @@ A ChatGPT Plus or Pro subscription does **not** include API access. They are sep
 git clone https://github.com/rashidisayev/ghost-writer.git
 cd ghost-writer
 ./Scripts/build-app.sh release
-open build/Quill.app
+open build/GhostWriter.app
 ```
 
 `Scripts/build-app.sh` compiles the SPM package and assembles a real `.app` bundle around the executable. That wrapping is not optional: `MenuBarExtra` and `LSUIElement` need genuine bundle identity, and a bare executable gets a Dock icon and no menu bar item.
 
 Then:
 
-1. Click the menu bar icon → **Grant Accessibility permission…**, and enable Quill in System Settings.
+1. Click the menu bar icon → **Grant Accessibility permission…**, and enable Ghost Writer in System Settings.
 2. Open **Settings…** and paste your OpenAI API key (**Save & Verify** sends one minimal request to confirm it).
 3. Put the caret in a paragraph anywhere and press <kbd>⌥⌘K</kbd>.
 
@@ -72,7 +72,7 @@ TCC keys an Accessibility grant to the **code directory hash**, and ad-hoc signi
 After each rebuild:
 
 ```bash
-tccutil reset Accessibility com.quill.app
+tccutil reset Accessibility com.ghostwriter.app
 ```
 
 then re-grant from the menu. A real Developer ID certificate gives a stable signature and makes this go away.
@@ -83,19 +83,19 @@ then re-grant from the menu. A real Developer ID certificate gives a stable sign
 
 ```
 Sources/
-  QuillCore/           Pure logic, no I/O — models, policy, diff, scope resolution
-  QuillAccessibility/  All AX interaction: read, write, focus tracking, quirks
-  QuillAI/             OpenAI Responses API client and prompt construction
-  QuillStorage/        Keychain and UserDefaults
-  QuillInput/          Global hotkey
-  QuillUI/             Suggestion panel, field overlay, settings, coordinator
-  Quill/               App entry point, menu bar
+  GhostWriterCore/           Pure logic, no I/O — models, policy, diff, scope resolution
+  GhostWriterAccessibility/  All AX interaction: read, write, focus tracking, quirks
+  GhostWriterAI/             OpenAI Responses API client and prompt construction
+  GhostWriterStorage/        Keychain and UserDefaults
+  GhostWriterInput/          Global hotkey
+  GhostWriterUI/             Suggestion panel, field overlay, settings, coordinator
+  GhostWriter/               App entry point, menu bar
 Tools/ax-probe/        Standalone CLI for testing AX support app-by-app
 Scripts/               Bundle assembly, icon generation
 docs/                  Design documents (01–10) and the compatibility matrix
 ```
 
-`QuillCore` has no dependencies and holds everything testable without a UI or a network — which is why the test suite covers policy, scoping and Unicode handling but not the panels.
+`GhostWriterCore` has no dependencies and holds everything testable without a UI or a network — which is why the test suite covers policy, scoping and Unicode handling but not the panels.
 
 ---
 
@@ -108,7 +108,7 @@ Chromium, Electron and WebKit change their accessibility trees regularly, and th
 Three mitigations are in the code today:
 
 - **Speculative priming.** Every app is primed on activation, including ones absent from the quirk table. Priming only apps in a hardcoded list means every Electron app nobody thought to add silently reads as "no text field focused".
-- **Per-process focus resolution.** Focus is read from the target process directly, never from the system-wide element — the system-wide element resolves against whatever is frontmost, and clicking Quill's own menu makes *Quill* frontmost.
+- **Per-process focus resolution.** Focus is read from the target process directly, never from the system-wide element — the system-wide element resolves against whatever is frontmost, and clicking Ghost Writer's own menu makes *Ghost Writer* frontmost.
 - **Paste-first writing.** AX writes report success and silently no-op in most web content. Pasting works everywhere and preserves the host app's undo stack.
 
 The architectural fix — a remote-updatable, signed quirk table so compatibility fixes ship in hours ([docs/05](docs/05-accessibility-strategy.md) §8) — is designed but **not built**. It reads like infrastructure competing with features; it is what decides whether features stay shippable in year two.
@@ -139,7 +139,7 @@ cd Tools/ax-probe && swiftc -O main.swift -o ax-probe
 - Builds clean; 25 unit tests pass
 - Launches as a menu bar agent with no Dock icon, correct bundle identity, ad-hoc signed
 - Accessibility permission detection updates live (~2s) without a relaunch
-- Reads text from a real app while that app is **not** frontmost — the case that matters, since triggering from the menu makes Quill frontmost
+- Reads text from a real app while that app is **not** frontmost — the case that matters, since triggering from the menu makes Ghost Writer frontmost
 - Field overlay geometry lands correctly on the focused field
 - Keychain read/write/delete round-trips on an ad-hoc signature
 

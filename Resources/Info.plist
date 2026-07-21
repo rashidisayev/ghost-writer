@@ -3,17 +3,17 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleName</key>
-	<string>Quill</string>
+	<string>Ghost Writer</string>
 	<key>CFBundleDisplayName</key>
-	<string>Quill</string>
+	<string>Ghost Writer</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.quill.app</string>
+	<string>com.ghostwriter.app</string>
 	<key>CFBundleExecutable</key>
-	<string>Quill</string>
+	<string>GhostWriter</string>
 	<key>CFBundleIconFile</key>
-	<string>Quill</string>
+	<string>GhostWriter</string>
 	<key>CFBundleIconName</key>
-	<string>Quill</string>
+	<string>GhostWriter</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -23,14 +23,14 @@
 	<key>LSMinimumSystemVersion</key>
 	<string>14.0</string>
 
-	<!-- No Dock icon. Quill is a background agent. -->
+	<!-- No Dock icon. Ghost Writer is a background agent. -->
 	<key>LSUIElement</key>
 	<true/>
 
 	<key>NSHumanReadableCopyright</key>
-	<string>Quill</string>
+	<string>Ghost Writer</string>
 	<key>NSAppleEventsUsageDescription</key>
-	<string>Quill asks your browser for the current tab URL so per-domain exclusions work.</string>
+	<string>Ghost Writer asks your browser for the current tab URL so per-domain exclusions work.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

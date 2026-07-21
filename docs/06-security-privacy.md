@@ -54,13 +54,13 @@ exclusions.matchesDomain(frontmostTabURL)
 
 Blocked passes increment a visible "protected" counter in stats. Making the protection legible is what makes it credible.
 
-**Secure input is subtle.** Any app can enable system-wide secure input and sometimes fails to disable it (a known long-standing bug across several apps). Quill must re-check `IsSecureEventInputEnabled()` on every pass, not once at focus, and should surface a menu bar hint when secure input has been stuck on for more than a few minutes — users otherwise report "Quill stopped working" when the real cause is another app.
+**Secure input is subtle.** Any app can enable system-wide secure input and sometimes fails to disable it (a known long-standing bug across several apps). Ghost Writer must re-check `IsSecureEventInputEnabled()` on every pass, not once at focus, and should surface a menu bar hint when secure input has been stuck on for more than a few minutes — users otherwise report "Ghost Writer stopped working" when the real cause is another app.
 
 ## 4. Keychain
 
 ```swift
 kSecClass                = kSecClassGenericPassword
-kSecAttrService          = "com.quill.app.anthropic"
+kSecAttrService          = "com.ghostwriter.app.anthropic"
 kSecAttrAccount          = "default"
 kSecAttrAccessible       = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
 kSecUseDataProtectionKeychain = true
@@ -84,10 +84,10 @@ Set `anthropic-version: 2023-06-01`. Requests carry `x-api-key` from the Keychai
 
 Two things to communicate honestly in the Privacy tab:
 
-1. Data sent to the Claude API is subject to Anthropic's API data-retention and usage policies, and users on a commercial API plan should read those directly. Quill should link to them rather than paraphrase.
-2. The API key is the user's own. Quill has no server, no proxy, and no account — the app talks directly to Anthropic. This means Quill's operators cannot see any user text even in principle, which is a stronger guarantee than a policy promise.
+1. Data sent to the Claude API is subject to Anthropic's API data-retention and usage policies, and users on a commercial API plan should read those directly. Ghost Writer should link to them rather than paraphrase.
+2. The API key is the user's own. Ghost Writer has no server, no proxy, and no account — the app talks directly to Anthropic. This means Ghost Writer's operators cannot see any user text even in principle, which is a stronger guarantee than a policy promise.
 
-If a future hosted plan introduces a Quill-operated proxy, that changes this section materially and must be a separate, clearly-labelled mode — not a silent default.
+If a future hosted plan introduces a Ghost Writer-operated proxy, that changes this section materially and must be a separate, clearly-labelled mode — not a silent default.
 
 ## 7. Code signing & integrity
 
@@ -104,6 +104,6 @@ The framing must stay honest, though: a 4–8B local model in 2026 does not matc
 
 ## 9. Compliance notes
 
-- **GDPR** — Quill is not a data controller for user text in Cloud Mode; the user's own API contract with Anthropic governs. Quill processes locally and transiently. Document this in the privacy policy rather than claiming more than is true.
+- **GDPR** — Ghost Writer is not a data controller for user text in Cloud Mode; the user's own API contract with Anthropic governs. Ghost Writer processes locally and transiently. Document this in the privacy policy rather than claiming more than is true.
 - **Enterprise deployment** — MDM-deployable configuration profile for forced exclusions, forced Local Mode, and a locked provider. Enterprises will ask for this within the first month of any traction.
 - **App Store** — not viable. See [09-risks.md](09-risks.md) §1.

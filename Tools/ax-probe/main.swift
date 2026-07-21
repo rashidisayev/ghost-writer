@@ -164,7 +164,7 @@ header("3. Secure input state")
 
 if IsSecureEventInputEnabled() {
     warn("Secure input is ENABLED — a password field is focused somewhere,")
-    warn("or an app has left it stuck on. Quill would go dormant here.")
+    warn("or an app has left it stuck on. Ghost Writer would go dormant here.")
 } else {
     ok("Secure input is off — safe to read")
 }
@@ -219,7 +219,7 @@ info("Role:    \(role)")
 info("Subrole: \(subrole)")
 
 if subrole == (kAXSecureTextFieldSubrole as String) {
-    bad("This is a SECURE TEXT FIELD — Quill must never read it")
+    bad("This is a SECURE TEXT FIELD — Ghost Writer must never read it")
     print("\n  \(bold)VERDICT: BLOCKED (correctly)\(reset)\n")
     exit(0)
 }
@@ -389,5 +389,5 @@ if canRead && hasCaret {
     print("  Manual-selection rewriting only; no automatic paragraph scoping.\n")
 } else {
     print("  \(red)\(bold)UNSUPPORTED\(reset) — no readable text")
-    print("  Quill must detect this app and go dormant.\n")
+    print("  Ghost Writer must detect this app and go dormant.\n")
 }

@@ -6,7 +6,7 @@ One process. Not two.
 
 A common instinct is to split into a UI app plus a privileged background daemon. Resist it for v1: the Accessibility API requires the *calling process* to be AX-trusted, an `NSPanel` overlay must be drawn by a process with a connection to the WindowServer, and a `LaunchAgent` daemon has neither by default. Splitting buys you a second TCC prompt, XPC plumbing, and a harder debugging story for no isolation win, since both halves would need the same permissions anyway.
 
-**Quill is a single `LSUIElement` (agent) app** — `LSUIElement = true` in `Info.plist` gives no Dock icon, no menu bar app menu, but full WindowServer access. Registered as a login item via `SMAppService.mainApp.register()`.
+**Ghost Writer is a single `LSUIElement` (agent) app** — `LSUIElement = true` in `Info.plist` gives no Dock icon, no menu bar app menu, but full WindowServer access. Registered as a login item via `SMAppService.mainApp.register()`.
 
 Internally it is layered, and the layers are separated by protocols so that a future split (or a Network Extension for local models) is a refactor, not a rewrite.
 
@@ -84,7 +84,7 @@ Solid arrows are v1. Dashed are the extension seams.
 | `FocusTracker` | Emits `FocusContext` (pid, bundleID, AXUIElement, role, subrole, URL for browsers) whenever the focused element changes | `AXObserver` on `kAXFocusedUIElementChangedNotification`, `NSWorkspace.didActivateApplicationNotification` |
 | `TextReader` | Reads value, selected range, caret rect, per-range rects | `AXUIElementCopyAttributeValue`, `kAXBoundsForRangeParameterizedAttribute` |
 | `KeystrokeMonitor` | Debounce signal only. **Listen-only tap** — never modifies or consumes events, records no key codes, only a timestamp and a "text-ish keystroke" boolean | `CGEvent.tapCreate(.listenOnly)` |
-| `HotkeyManager` | Global shortcuts that work when Quill is not frontmost | Carbon `RegisterEventHotKey` (still the only reliable global hotkey API) |
+| `HotkeyManager` | Global shortcuts that work when Ghost Writer is not frontmost | Carbon `RegisterEventHotKey` (still the only reliable global hotkey API) |
 | `TextWriter` | Applies an accepted rewrite | AX set, or pasteboard + synthetic `⌘V` via `CGEvent` |
 
 `KeystrokeMonitor` is the one piece that alarms security-conscious users, so its contract is narrow by design: it maps every event to `(timestamp, isTextInput: Bool)` and drops the event object immediately. Text content always comes from the Accessibility API, never from the tap.
@@ -226,7 +226,7 @@ The AX-then-paste fallback matters: `kAXValueAttribute` writes report success an
 | Network | `URLSession` async, structured-concurrency child tasks of the orchestrator's task |
 | UI | `@MainActor` |
 
-AX calls on the main actor is a real constraint: a slow `AXUIElementCopyAttributeValue` against a hung app will block the main thread. Mitigation is `AXUIElementSetMessagingTimeout(element, 0.25)` on every element Quill touches, plus never reading in a loop.
+AX calls on the main actor is a real constraint: a slow `AXUIElementCopyAttributeValue` against a hung app will block the main thread. Mitigation is `AXUIElementSetMessagingTimeout(element, 0.25)` on every element Ghost Writer touches, plus never reading in a loop.
 
 ## 7. Plugin architecture (v2 seam)
 
@@ -235,4 +235,4 @@ Two extension points, both defined in v1 so the shapes don't have to change late
 1. **Providers** — anything conforming to `RewriteProvider`. In-process for built-ins; out-of-process via XPC for third-party, so a crashing plugin cannot take down the agent.
 2. **Transforms** — `(RewriteRequest) -> RewriteRequest` and `(RewriteResult) -> RewriteResult` hooks, registered in an ordered chain. This is how "redact company names before sending", "enforce a glossary", or "append a team style guide" get built without forking.
 
-Distribution as signed bundles in `~/Library/Application Support/Quill/Plugins`, validated by code signature before load.
+Distribution as signed bundles in `~/Library/Application Support/Ghost Writer/Plugins`, validated by code signature before load.

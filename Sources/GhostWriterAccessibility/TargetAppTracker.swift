@@ -3,14 +3,14 @@ import AppKit
 /// Remembers which application the user was actually working in.
 ///
 /// The system-wide AX element resolves focus against whatever is frontmost, and
-/// clicking Quill's menu bar item makes *Quill* frontmost — so a rewrite
-/// triggered from the menu would inspect Quill's own menu and correctly report
-/// that no text field is focused. The hotkey path doesn't activate Quill and so
+/// clicking Ghost Writer's menu bar item makes *Ghost Writer* frontmost — so a rewrite
+/// triggered from the menu would inspect Ghost Writer's own menu and correctly report
+/// that no text field is focused. The hotkey path doesn't activate Ghost Writer and so
 /// never showed this.
 ///
 /// Tracking the last activated app that isn't us makes both paths behave the
 /// same. It also gives policy the right bundle identifier: evaluating app
-/// exclusions against "com.quill.app" would silently ignore the user's list.
+/// exclusions against "com.ghostwriter.app" would silently ignore the user's list.
 @MainActor
 public final class TargetAppTracker {
     public static let shared = TargetAppTracker()

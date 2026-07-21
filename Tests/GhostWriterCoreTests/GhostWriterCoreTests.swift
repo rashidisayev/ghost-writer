@@ -1,5 +1,5 @@
 import XCTest
-@testable import QuillCore
+@testable import GhostWriterCore
 
 // MARK: - ScopeResolver
 

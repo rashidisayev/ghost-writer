@@ -1,6 +1,6 @@
 import AppKit
-import QuillAccessibility
-import QuillCore
+import GhostWriterAccessibility
+import GhostWriterCore
 import SwiftUI
 
 @MainActor

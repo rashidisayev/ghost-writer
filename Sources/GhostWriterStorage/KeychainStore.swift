@@ -14,7 +14,7 @@ public enum KeychainError: Error, LocalizedError {
 }
 
 public struct KeychainStore: Sendable {
-    private let service = "com.quill.app.openai"
+    private let service = "com.ghostwriter.app.openai"
     private let account = "default"
 
     public init() {}

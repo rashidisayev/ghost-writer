@@ -1,10 +1,10 @@
 import AppKit
 import ApplicationServices
-import QuillAI
-import QuillAccessibility
-import QuillCore
-import QuillInput
-import QuillStorage
+import GhostWriterAI
+import GhostWriterAccessibility
+import GhostWriterCore
+import GhostWriterInput
+import GhostWriterStorage
 import SwiftUI
 
 /// Drives one pass: read focused text → scope to the paragraph → policy → OpenAI
@@ -40,7 +40,7 @@ public final class RewriteCoordinator {
 
     public func triggerRewrite() {
         guard AXPermissions.isTrusted else {
-            presentFailure("Quill needs Accessibility permission. Open Settings to grant it.")
+            presentFailure("Ghost Writer needs Accessibility permission. Open Settings to grant it.")
             return
         }
         guard !settings.isPaused else { return }
@@ -70,13 +70,13 @@ public final class RewriteCoordinator {
         case .allow:
             break
         case .denySecureField:
-            presentFailure("Quill never reads secure fields.")
+            presentFailure("Ghost Writer never reads secure fields.")
             return
         case .denyNotEditable:
             presentFailure("That isn't an editable text field.")
             return
         case let .denyExcludedApp(bundle):
-            presentFailure("Quill is disabled in \(bundle).")
+            presentFailure("Ghost Writer is disabled in \(bundle).")
             return
         case .denyPaused:
             return
@@ -222,7 +222,7 @@ public final class RewriteCoordinator {
     }
 
     /// Tab and Esc are registered ONLY while a suggestion is showing, and
-    /// unregistered the moment it's dismissed — otherwise Quill swallows Tab
+    /// unregistered the moment it's dismissed — otherwise Ghost Writer swallows Tab
     /// system-wide.
     private func bindTransientHotkeys(acceptEnabled: Bool, state: SuggestionView.State) {
         releaseTransientHotkeys()

@@ -59,7 +59,7 @@ Icon: a monoline feather/pen glyph. Template image so it adapts to light/dark an
 
 ```
 ┌────────────────────────────────────┐
-│  ● Quill is active                 │
+│  ● Ghost Writer is active                 │
 │                                    │
 │  Tone   Professional            ▸  │
 │  ─────────────────────────────────  │
@@ -70,7 +70,7 @@ Icon: a monoline feather/pen glyph. Template image so it adapts to light/dark an
 │  Today: 34 shown · 71% accepted    │
 │  ─────────────────────────────────  │
 │  Settings…                     ⌘,  │
-│  Quit Quill                    ⌘Q  │
+│  Quit Ghost Writer                    ⌘Q  │
 └────────────────────────────────────┘
 ```
 
@@ -79,7 +79,7 @@ Icon: a monoline feather/pen glyph. Template image so it adapts to light/dark an
 ## 4. Settings — General
 
 ```
-┌─ Quill Settings ─────────────────────────────────────────────────┐
+┌─ Ghost Writer Settings ─────────────────────────────────────────────────┐
 │ [General] Triggers  Tones  Languages  Exclusions  AI  Privacy    │
 ├──────────────────────────────────────────────────────────────────┤
 │                                                                  │
@@ -99,7 +99,7 @@ Icon: a monoline feather/pen glyph. Template image so it adapts to light/dark an
 │   Permissions                                                    │
 │     Accessibility        ✓ Granted        [ Open Settings… ]     │
 │     Input Monitoring     ⚠ Not granted    [ Grant… ]             │
-│         Needed to detect typing pauses. Quill never records       │
+│         Needed to detect typing pauses. Ghost Writer never records       │
 │         keystrokes — only the time of the last one.              │
 └──────────────────────────────────────────────────────────────────┘
 ```
@@ -109,7 +109,7 @@ Permission rows live in General, not buried in a Privacy tab, because a missing 
 ## 5. Settings — Tone Profiles
 
 ```
-┌─ Quill Settings ─────────────────────────────────────────────────┐
+┌─ Ghost Writer Settings ─────────────────────────────────────────────────┐
 │ General  Triggers  [Tones]  Languages  Exclusions  AI  Privacy   │
 ├─────────────────────┬────────────────────────────────────────────┤
 │ ✦ Professional  ★   │  Name  [ Engineering Manager            ]  │
@@ -195,7 +195,7 @@ Terminal and 1Password ship pre-excluded. "Always on" rows are shown but disable
 Four screens, no account required, no email gate.
 
 ```
-1  What Quill does          → single animated demo of a rewrite in Slack
+1  What Ghost Writer does          → single animated demo of a rewrite in Slack
 2  Grant Accessibility      → explains exactly what is read, deep-links to
                               System Settings, polls until granted
 3  Grant Input Monitoring   → explains the timestamp-only contract, offers

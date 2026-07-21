@@ -120,14 +120,14 @@ Port the CLI logic into the packages, then add in this order:
 ```bash
 # Sign
 codesign --force --deep --options runtime \
-  --sign "Developer ID Application: YOUR NAME (TEAMID)" Quill.app
+  --sign "Developer ID Application: YOUR NAME (TEAMID)" GhostWriter.app
 
 # Notarize
-xcrun notarytool submit Quill.zip \
+xcrun notarytool submit GhostWriter.zip \
   --keychain-profile "AC_PASSWORD" --wait
 
 # Staple
-xcrun stapler staple Quill.app
+xcrun stapler staple GhostWriter.app
 ```
 
 Requires a paid Apple Developer account ($99/yr) for the Developer ID certificate. Put notarization in CI and make its failure break the build — an un-notarized build reaching a user is a conversion killer, and it fails quietly.

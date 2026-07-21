@@ -10,7 +10,7 @@ public enum Diagnostics {
 
     public static func report() -> String {
         var out: [String] = []
-        out.append("Quill diagnostics — \(ISO8601DateFormatter().string(from: Date()))")
+        out.append("Ghost Writer diagnostics — \(ISO8601DateFormatter().string(from: Date()))")
         out.append("AX trusted: \(AXPermissions.isTrusted)")
 
         guard let app = TargetAppTracker.shared.target else {

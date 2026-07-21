@@ -36,7 +36,7 @@ Chromium, Electron, and WebKit change their accessibility tree implementations r
 
 ## 4. Text corruption is the trust-ending failure
 
-Replacement can go wrong: a stale range after the user typed during the request, a paste landing in the wrong field after a focus change, an app that handles `⌘V` unusually. A single incident of Quill mangling someone's email is worth more negative word of mouth than fifty good rewrites are worth positive.
+Replacement can go wrong: a stale range after the user typed during the request, a paste landing in the wrong field after a focus change, an app that handles `⌘V` unusually. A single incident of Ghost Writer mangling someone's email is worth more negative word of mouth than fifty good rewrites are worth positive.
 
 **Mitigations:** cancel on any keystroke; re-verify focus identity and text hash immediately before writing; verify by re-read after writing and abort on mismatch; never write to a field that changed since the read; keep the rewrite in the pasteboard history marker so a failed apply is recoverable by the user.
 
@@ -56,7 +56,7 @@ Prompts that work well in English can produce over-formal Russian, unnaturally c
 
 ## 7. Secure input false negatives
 
-If another app leaves system-wide secure input enabled (a recurring bug across several popular apps), Quill goes dormant and users report it as broken. Conversely, a custom-drawn password field that does not set the secure subrole and does not enable secure input would not be detected as sensitive.
+If another app leaves system-wide secure input enabled (a recurring bug across several popular apps), Ghost Writer goes dormant and users report it as broken. Conversely, a custom-drawn password field that does not set the secure subrole and does not enable secure input would not be detected as sensitive.
 
 **Mitigations:** for the first case, detect a stuck secure-input state and surface an explanatory menu bar hint naming the likely culprit process. For the second, the credential heuristics in [06](06-security-privacy.md) §3 are the backstop — which is precisely why the send-block layer exists in addition to the read-block layer.
 

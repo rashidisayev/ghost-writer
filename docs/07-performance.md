@@ -21,7 +21,7 @@ The 0 ms keystroke budget is the one that matters most. Users forgive slow sugge
 
 ## 2. Never block typing
 
-The event tap is created with `.listenOnly`, which means the system does not wait for Quill before delivering the keystroke. Even so, the callback is written as if it were in the path:
+The event tap is created with `.listenOnly`, which means the system does not wait for Ghost Writer before delivering the keystroke. Even so, the callback is written as if it were in the path:
 
 ```swift
 // The ENTIRE callback body. No allocation, no locks, no logging.
@@ -36,17 +36,17 @@ let cb: CGEventTapCallBack = { _, type, _, refcon in
 
 One atomic store. No `Date()`, no dictionary lookup, no `os_log`. The orchestrator polls the atomic on its own timer; the tap never calls into it.
 
-macOS disables an event tap that is too slow (`tapDisabledByTimeout`) — Quill listens for that event type and re-enables the tap, logging it as a defect to investigate rather than treating it as routine.
+macOS disables an event tap that is too slow (`tapDisabledByTimeout`) — Ghost Writer listens for that event type and re-enables the tap, logging it as a defect to investigate rather than treating it as routine.
 
 ## 3. Reducing AX cost
 
 AX calls are synchronous IPC to the target process. They are the second-biggest performance risk after the tap.
 
-- **Timeout everything.** `AXUIElementSetMessagingTimeout(element, 0.25)` on every element. A hung target app must not hang Quill's main thread.
+- **Timeout everything.** `AXUIElementSetMessagingTimeout(element, 0.25)` on every element. A hung target app must not hang Ghost Writer's main thread.
 - **Read the range, not the field.** `kAXStringForRangeParameterizedAttribute` around the caret rather than `kAXValueAttribute` on the whole buffer. On a 200KB document this is the difference between ~40 ms and ~0.5 ms per pass.
 - **Cheap change detection.** `kAXNumberOfCharactersAttribute` is far cheaper than pulling the value. Compare length and caret offset first; only pull text when one of them moved meaningfully.
 - **Never poll.** All focus changes come from `AXObserver` notifications. Polling the AX tree at any interval is how these apps end up at 5% idle CPU.
-- **Disable enhanced accessibility when idle.** Chromium/Electron trees are expensive for the *host* app. Turn the attribute off after 5 minutes without editable focus in that app — this is a performance fix for the user's other apps, which they will attribute to Quill either way.
+- **Disable enhanced accessibility when idle.** Chromium/Electron trees are expensive for the *host* app. Turn the attribute off after 5 minutes without editable focus in that app — this is a performance fix for the user's other apps, which they will attribute to Ghost Writer either way.
 
 ## 4. Debouncing and cancellation
 

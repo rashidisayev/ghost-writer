@@ -1,6 +1,6 @@
 import Foundation
 
-/// Identifies the app + field Quill is looking at. Deliberately carries no
+/// Identifies the app + field Ghost Writer is looking at. Deliberately carries no
 /// text — policy runs *before* any read.
 public struct FocusDescriptor: Sendable, Equatable {
     public let bundleIdentifier: String?

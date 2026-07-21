@@ -1,8 +1,8 @@
 import AppKit
 import ApplicationServices
-import QuillAccessibility
-import QuillCore
-import QuillStorage
+import GhostWriterAccessibility
+import GhostWriterCore
+import GhostWriterStorage
 import SwiftUI
 
 /// The Grammarly-style affordance: a highlight around the focused text field and
@@ -43,7 +43,7 @@ public final class FieldOverlay {
     private func tick() {
         guard AXPermissions.isTrusted, !settings.isPaused else { return hide() }
 
-        // Never draw over Quill's own windows.
+        // Never draw over Ghost Writer's own windows.
         guard let app = TargetAppTracker.shared.target,
               let element = TextReader.focusedElement(in: app.processIdentifier) else {
             return hide()

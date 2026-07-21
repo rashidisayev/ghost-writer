@@ -5,20 +5,40 @@
             "request": "launch",
             "args": [],
             "cwd": "${workspaceFolder:macosapp}",
-            "name": "Debug Quill",
-            "target": "Quill",
+            "name": "Debug GhostWriter",
+            "target": "GhostWriter",
             "configuration": "debug",
-            "preLaunchTask": "swift: Build Debug Quill"
+            "preLaunchTask": "swift: Build Debug GhostWriter"
         },
         {
             "type": "swift",
             "request": "launch",
             "args": [],
             "cwd": "${workspaceFolder:macosapp}",
-            "name": "Release Quill",
-            "target": "Quill",
+            "name": "Release GhostWriter",
+            "target": "GhostWriter",
             "configuration": "release",
-            "preLaunchTask": "swift: Build Release Quill"
+            "preLaunchTask": "swift: Build Release GhostWriter"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:macosapp}",
+            "name": "Debug GhostWriter",
+            "target": "GhostWriter",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug GhostWriter"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:macosapp}",
+            "name": "Release GhostWriter",
+            "target": "GhostWriter",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release GhostWriter"
         }
     ]
 }

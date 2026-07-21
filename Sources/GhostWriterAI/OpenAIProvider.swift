@@ -1,6 +1,6 @@
 import Foundation
-import QuillCore
-import QuillStorage
+import GhostWriterCore
+import GhostWriterStorage
 
 /// Talks to OpenAI's Responses API (`/v1/responses`) directly rather than
 /// pulling in an SDK. See docs/04-project-structure.md §3 for why that's the

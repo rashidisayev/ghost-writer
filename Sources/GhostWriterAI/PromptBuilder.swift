@@ -1,5 +1,5 @@
 import Foundation
-import QuillCore
+import GhostWriterCore
 
 public enum PromptBuilder {
 

@@ -2,25 +2,25 @@
 import PackageDescription
 
 let package = Package(
-    name: "Quill",
+    name: "GhostWriter",
     platforms: [.macOS(.v14)],
     products: [
-        .executable(name: "Quill", targets: ["Quill"]),
+        .executable(name: "GhostWriter", targets: ["GhostWriter"]),
     ],
     targets: [
-        .target(name: "QuillCore"),
-        .target(name: "QuillStorage", dependencies: ["QuillCore"]),
-        .target(name: "QuillAccessibility", dependencies: ["QuillCore"]),
-        .target(name: "QuillAI", dependencies: ["QuillCore", "QuillStorage"]),
-        .target(name: "QuillInput"),
+        .target(name: "GhostWriterCore"),
+        .target(name: "GhostWriterStorage", dependencies: ["GhostWriterCore"]),
+        .target(name: "GhostWriterAccessibility", dependencies: ["GhostWriterCore"]),
+        .target(name: "GhostWriterAI", dependencies: ["GhostWriterCore", "GhostWriterStorage"]),
+        .target(name: "GhostWriterInput"),
         .target(
-            name: "QuillUI",
-            dependencies: ["QuillCore", "QuillStorage", "QuillAccessibility", "QuillAI", "QuillInput"]
+            name: "GhostWriterUI",
+            dependencies: ["GhostWriterCore", "GhostWriterStorage", "GhostWriterAccessibility", "GhostWriterAI", "GhostWriterInput"]
         ),
         .executableTarget(
-            name: "Quill",
-            dependencies: ["QuillCore", "QuillStorage", "QuillAccessibility", "QuillAI", "QuillInput", "QuillUI"]
+            name: "GhostWriter",
+            dependencies: ["GhostWriterCore", "GhostWriterStorage", "GhostWriterAccessibility", "GhostWriterAI", "GhostWriterInput", "GhostWriterUI"]
         ),
-        .testTarget(name: "QuillCoreTests", dependencies: ["QuillCore"]),
+        .testTarget(name: "GhostWriterCoreTests", dependencies: ["GhostWriterCore"]),
     ]
 )

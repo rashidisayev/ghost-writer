@@ -1,11 +1,11 @@
 #!/usr/bin/env swift
-// Renders Resources/Quill.iconset from code — no binary asset to keep in sync.
+// Renders Resources/Ghost Writer.iconset from code — no binary asset to keep in sync.
 // macOS icons are a rounded "squircle" with the mark inset; drawing straight to
 // the edges is the classic way to make an app look unfinished in the Dock.
 import AppKit
 
 let sizes = [16, 32, 64, 128, 256, 512, 1024]
-let out = CommandLine.arguments.count > 1 ? CommandLine.arguments[1] : "Resources/Quill.iconset"
+let out = CommandLine.arguments.count > 1 ? CommandLine.arguments[1] : "Resources/Ghost Writer.iconset"
 try? FileManager.default.createDirectory(atPath: out, withIntermediateDirectories: true)
 
 func render(_ px: Int) -> Data {

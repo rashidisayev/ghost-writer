@@ -1,5 +1,5 @@
 #!/bin/bash
-# Packages build/Quill.app into a distributable .dmg.
+# Packages build/GhostWriter.app into a distributable .dmg.
 #
 # IMPORTANT: this produces an AD-HOC SIGNED disk image. Gatekeeper will block it
 # on any Mac but the one that built it — see the warning printed at the end and
@@ -9,8 +9,8 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-APP="$ROOT/build/Quill.app"
-NAME="Quill"
+APP="$ROOT/build/GhostWriter.app"
+NAME="GhostWriter"
 VERSION="$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" \
 	"$APP/Contents/Info.plist" 2>/dev/null || echo "0.1")"
 DMG="$ROOT/build/${NAME}-${VERSION}.dmg"
@@ -29,10 +29,10 @@ cp -R "$APP" "$STAGE/"
 # Finder adds its own. codesign --strict rejects a bundle carrying them. Strip
 # them from the COPY: they are not covered by the signature, so removing them
 # leaves it valid, and the original stays untouched for local runs.
-xattr -cr "$STAGE/Quill.app"
+xattr -cr "$STAGE/GhostWriter.app"
 
 echo "==> Verifying signature before packaging"
-codesign --verify --deep --strict "$STAGE/Quill.app" || {
+codesign --verify --deep --strict "$STAGE/GhostWriter.app" || {
 	echo "error: app fails signature verification; packaging it would ship a broken build" >&2
 	exit 1
 }
@@ -43,10 +43,10 @@ ln -s /Applications "$STAGE/Applications"
 
 # A README the recipient will actually see when the image mounts.
 cat > "$STAGE/READ ME FIRST.txt" <<'NOTE'
-Quill — installation
+Ghost Writer — installation
 
-1. Drag Quill.app onto the Applications folder shown here.
-2. Open Applications and launch Quill.
+1. Drag GhostWriter.app onto the Applications folder shown here.
+2. Open Applications and launch Ghost Writer.
 
 macOS will very likely refuse to open it the first time, saying the app is
 damaged or from an unidentified developer. That is Gatekeeper reacting to the
@@ -55,24 +55,24 @@ app is not damaged.
 
 To open it anyway:
 
-    Right-click Quill.app  ->  Open  ->  Open
+    Right-click GhostWriter.app  ->  Open  ->  Open
 
 If macOS still refuses, run this in Terminal:
 
-    xattr -dr com.apple.quarantine /Applications/Quill.app
+    xattr -dr com.apple.quarantine /Applications/GhostWriter.app
 
-Quill needs Accessibility permission to read and rewrite the text field you are
+Ghost Writer needs Accessibility permission to read and rewrite the text field you are
 typing in. It asks for this on first launch and explains why. It never reads
 password fields, terminals, or password managers.
 
-You also need your own OpenAI API key, with credit on the account. Quill sends
-text directly to OpenAI — there is no Quill server.
+You also need your own OpenAI API key, with credit on the account. Ghost Writer sends
+text directly to OpenAI — there is no Ghost Writer server.
 NOTE
 
 echo "==> Building disk image"
 rm -f "$DMG"
 hdiutil create \
-	-volname "$NAME" \
+	-volname "Ghost Writer" \
 	-srcfolder "$STAGE" \
 	-ov -format UDZO \
 	"$DMG" >/dev/null

@@ -5,17 +5,17 @@
 Swift Package Manager modules inside a single Xcode project. The app target is a thin shell; everything testable lives in packages, which is what makes the AX and orchestration logic unit-testable without launching a GUI.
 
 ```
-Quill/
-├── Quill.xcodeproj
+Ghost Writer/
+├── Ghost Writer.xcodeproj
 ├── App/                                  # app target — thin
-│   ├── QuillApp.swift                    # @main, MenuBarExtra + Settings scenes
+│   ├── GhostWriterApp.swift                    # @main, MenuBarExtra + Settings scenes
 │   ├── AppDelegate.swift                 # LSUIElement lifecycle, login item
 │   ├── Info.plist                        # LSUIElement=true, usage strings
-│   ├── Quill.entitlements                # NOT sandboxed — see 09-risks.md
+│   ├── Ghost Writer.entitlements                # NOT sandboxed — see 09-risks.md
 │   └── Resources/Assets.xcassets
 │
 ├── Packages/
-│   ├── QuillCore/                        # pure logic, zero AppKit
+│   ├── GhostWriterCore/                        # pure logic, zero AppKit
 │   │   ├── Model/
 │   │   │   ├── RewriteRequest.swift
 │   │   │   ├── RewriteResult.swift
@@ -36,7 +36,7 @@ Quill/
 │   │   │   └── ExclusionList.swift
 │   │   └── Cache/RewriteCache.swift
 │   │
-│   ├── QuillAI/                          # provider abstraction
+│   ├── GhostWriterAI/                          # provider abstraction
 │   │   ├── RewriteProvider.swift         # protocol + capabilities
 │   │   ├── PromptBuilder.swift           # system prompt assembly
 │   │   ├── Claude/
@@ -46,7 +46,7 @@ Quill/
 │   │   ├── OpenAI/                       # v2 stub
 │   │   └── Local/                        # v2 stub
 │   │
-│   ├── QuillAccessibility/               # all AX in one place
+│   ├── GhostWriterAccessibility/               # all AX in one place
 │   │   ├── AXPermissions.swift
 │   │   ├── FocusTracker.swift
 │   │   ├── TextReader.swift
@@ -55,12 +55,12 @@ Quill/
 │   │   ├── BrowserURLResolver.swift
 │   │   └── AXCompat.swift                # per-app quirk table
 │   │
-│   ├── QuillInput/
+│   ├── GhostWriterInput/
 │   │   ├── KeystrokeMonitor.swift        # CGEventTap, listen-only
 │   │   ├── HotkeyManager.swift           # Carbon RegisterEventHotKey
 │   │   └── SecureInputDetector.swift
 │   │
-│   ├── QuillUI/
+│   ├── GhostWriterUI/
 │   │   ├── MenuBar/
 │   │   ├── Settings/                     # one SwiftUI view per tab
 │   │   ├── Suggestion/
@@ -70,14 +70,14 @@ Quill/
 │   │   │   └── UnderlineOverlay.swift
 │   │   └── Onboarding/
 │   │
-│   └── QuillStorage/
+│   └── GhostWriterStorage/
 │       ├── SettingsStore.swift           # UserDefaults + @Observable
 │       ├── KeychainStore.swift
 │       └── StatsStore.swift              # counters only, no content
 │
 ├── Tests/
-│   ├── QuillCoreTests/                   # diff, scope, policy — fast, hermetic
-│   ├── QuillAITests/                     # SSE parsing against recorded fixtures
+│   ├── GhostWriterCoreTests/                   # diff, scope, policy — fast, hermetic
+│   ├── GhostWriterAITests/                     # SSE parsing against recorded fixtures
 │   └── IntegrationTests/                 # drives TextEdit/Safari via AX
 │
 └── Tools/

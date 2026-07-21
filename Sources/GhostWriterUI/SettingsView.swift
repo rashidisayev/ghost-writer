@@ -1,8 +1,8 @@
 import AppKit
-import QuillAI
-import QuillAccessibility
-import QuillCore
-import QuillStorage
+import GhostWriterAI
+import GhostWriterAccessibility
+import GhostWriterCore
+import GhostWriterStorage
 import SwiftUI
 
 public struct SettingsView: View {
@@ -44,7 +44,7 @@ struct GeneralSettingsView: View {
             }
 
             Section {
-                Toggle("Pause Quill", isOn: $settings.isPaused)
+                Toggle("Pause Ghost Writer", isOn: $settings.isPaused)
                 LabeledContent("Shortcut") {
                     Text("⌥⌘K").font(.system(.body, design: .rounded))
                 }
@@ -90,7 +90,7 @@ struct AccountSettingsView: View {
             } header: {
                 Text("OpenAI API key")
             } footer: {
-                Text("Stored in the macOS Keychain, this device only, never synced to iCloud. Quill talks directly to api.openai.com — there is no Quill server, so your text is never seen by anyone but you and OpenAI.")
+                Text("Stored in the macOS Keychain, this device only, never synced to iCloud. Ghost Writer talks directly to api.openai.com — there is no Ghost Writer server, so your text is never seen by anyone but you and OpenAI.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -100,7 +100,7 @@ struct AccountSettingsView: View {
                      destination: URL(string: "https://platform.openai.com/api-keys")!)
                     .font(.callout)
             } footer: {
-                Text("A ChatGPT Plus or Pro subscription does not provide API access — those are separate products with separate billing. Quill needs a platform API key with credits on it.")
+                Text("A ChatGPT Plus or Pro subscription does not provide API access — those are separate products with separate billing. Ghost Writer needs a platform API key with credits on it.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -174,13 +174,13 @@ struct PermissionsSettingsView: View {
                     Button("Open System Settings…") { AXPermissions.openAccessibilitySettings() }
                 }
             } footer: {
-                Text("Quill reads the text in the focused field and writes the rewrite back. Both require Accessibility. Trust can be revoked while Quill is running, so this is re-checked every 2 seconds.")
+                Text("Ghost Writer reads the text in the focused field and writes the rewrite back. Both require Accessibility. Trust can be revoked while Ghost Writer is running, so this is re-checked every 2 seconds.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
 
             Section {
-                Text("Quill is not sandboxed — the Accessibility API requires it. That means the Mac App Store is not a distribution option; see docs/09-risks.md §1.")
+                Text("Ghost Writer is not sandboxed — the Accessibility API requires it. That means the Mac App Store is not a distribution option; see docs/09-risks.md §1.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
