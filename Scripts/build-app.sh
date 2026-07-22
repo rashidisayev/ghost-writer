@@ -38,53 +38,79 @@ fi
 # afterwards would invalidate the signature.
 xattr -cr "$APP"
 
-# Pick the strongest identity available.
+# Pick a signing identity, in order of what each one is good for.
 #
-# Only "Developer ID Application" produces a build that opens on someone else's
-# Mac. An "Apple Development" certificate is NOT a substitute — it is for
-# running on your own registered devices, cannot be notarized, and Gatekeeper
-# blocks it exactly like an ad-hoc signature. Set CODESIGN_IDENTITY to override.
+# The Accessibility grant is the reason identity matters here. TCC keys the
+# grant to the code signature. An ad-hoc signature has a fresh hash on every
+# build, so the grant dies on every build — the checkbox in System Settings
+# stays on while pointing at a binary that no longer exists, which reads as
+# "granted" and behaves as "denied". A real signing identity is keyed to the
+# certificate instead, so the grant survives rebuilds, exactly like Xcode.
 #
-# TCC keys the Accessibility grant to the code signature, so switching identity
-# means granting permission again.
+#   Developer ID Application : distribution — opens on any Mac once notarized
+#   Apple Development        : LOCAL dev — stable grant across rebuilds, but
+#                              Gatekeeper still blocks it on other machines
+#   ad-hoc                   : last resort — grant dies every build
+#
+# Set CODESIGN_IDENTITY to override the choice.
+# The trailing `|| true` is load-bearing: with `set -e`, grep finding no match
+# (e.g. no Developer ID cert) would otherwise abort the whole script here,
+# before the Apple Development fallback is even tried.
+pick() { security find-identity -v -p codesigning 2>/dev/null \
+	| grep "$1" | head -1 | sed 's/.*"\(.*\)".*/\1/' || true; }
+
 IDENTITY="${CODESIGN_IDENTITY:-}"
+KIND="override"
 if [ -z "$IDENTITY" ]; then
-	IDENTITY="$(security find-identity -v -p codesigning 2>/dev/null \
-		| grep 'Developer ID Application' | head -1 \
-		| sed 's/.*"\(.*\)".*/\1/' || true)"
+	IDENTITY="$(pick 'Developer ID Application')"; KIND="developer-id"
+fi
+if [ -z "$IDENTITY" ]; then
+	IDENTITY="$(pick 'Apple Development')"; KIND="apple-development"
 fi
 
 if [ -n "$IDENTITY" ]; then
 	echo "==> Signing as: $IDENTITY"
-	codesign --force --sign "$IDENTITY" \
-		--entitlements "$ROOT/Resources/GhostWriter.entitlements" \
-		--options runtime \
-		--timestamp \
-		"$APP" 2>&1 | sed 's/^/    /'
-	echo "    Distributable once notarized — run Scripts/notarize.sh"
+	# --timestamp needs the network and only matters for distribution, so it is
+	# added only for Developer ID. Written as two branches rather than an array:
+	# macOS ships bash 3.2, where expanding an empty array under `set -u` aborts
+	# with "unbound variable".
+	if [ "$KIND" = "developer-id" ]; then
+		codesign --force --sign "$IDENTITY" \
+			--entitlements "$ROOT/Resources/GhostWriter.entitlements" \
+			--options runtime --timestamp \
+			"$APP" 2>&1 | sed 's/^/    /'
+		echo "    Distributable once notarized — run Scripts/notarize.sh"
+	else
+		codesign --force --sign "$IDENTITY" \
+			--entitlements "$ROOT/Resources/GhostWriter.entitlements" \
+			--options runtime \
+			"$APP" 2>&1 | sed 's/^/    /'
+		echo "    Local identity: the Accessibility grant now survives rebuilds."
+	fi
 else
 	echo "==> Signing (ad-hoc — LOCAL USE ONLY)"
 	codesign --force --sign - \
 		--entitlements "$ROOT/Resources/GhostWriter.entitlements" \
 		--options runtime \
 		"$APP" 2>&1 | sed 's/^/    /'
-	echo "    No 'Developer ID Application' certificate found." >&2
-	echo "    This build will be blocked by Gatekeeper on every other Mac." >&2
+	echo "    No signing certificate found; the Accessibility grant will not" >&2
+	echo "    survive the next rebuild." >&2
 fi
 
 echo "==> Built $APP"
 codesign -dv "$APP" 2>&1 | sed 's/^/    /'
 
-# TCC keys an ad-hoc grant to the code directory hash, which changes on every
-# build. The old entry stays visible and switched on in System Settings while
-# applying to a binary that no longer exists — so it reads as "granted" and
-# behaves as "denied". Clearing it is the only way to get a truthful state.
+# A stable signature (Developer ID or Apple Development) keeps the Accessibility
+# grant across rebuilds. Only ad-hoc builds need the reset, and only once you
+# have switched TO ad-hoc from something else. When the grant does get into a
+# stale state — usually after changing identity — this is the reset:
 cat <<'NOTE'
 
-    Accessibility: this build has a new code signature, so any existing grant
-    no longer applies to it. Reset and re-grant:
+    If Accessibility reads as granted but the app behaves as if it is not, the
+    grant is stale (left over from a different signature). Reset once:
 
         tccutil reset Accessibility com.ghostwriter.app
 
-    then open GhostWriter and use "Grant Accessibility permission…" from the menu.
+    then open GhostWriter and grant it again. With a stable signing identity it
+    then persists across rebuilds.
 NOTE
