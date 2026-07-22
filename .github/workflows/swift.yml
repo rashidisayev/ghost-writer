@@ -107,14 +107,16 @@ jobs:
           MOUNT=$(hdiutil attach "$DMG" -nobrowse -readonly | tail -1 | sed 's/.*\(\/Volumes\/.*\)/\1/')
           trap 'hdiutil detach "$MOUNT" -quiet || true' EXIT
 
-          test -d "$MOUNT/GhostWriter.app" \
+          # Inside the image the bundle carries its display name, "Ghost
+          # Writer.app" — only the folder is renamed, the signature is intact.
+          test -d "$MOUNT/Ghost Writer.app" \
             || { echo "::error::no app in the disk image"; exit 1; }
           test -L "$MOUNT/Applications" \
             || { echo "::error::no /Applications symlink; drag-to-install would not work"; exit 1; }
 
           # The image is read-only, so nothing can have been added to the app
           # since packaging — this is the signature a user actually receives.
-          if ! codesign --verify --deep --strict "$MOUNT/GhostWriter.app"; then
+          if ! codesign --verify --deep --strict "$MOUNT/Ghost Writer.app"; then
             echo "::error::the shipped app fails signature verification"
             exit 1
           fi

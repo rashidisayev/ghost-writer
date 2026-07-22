@@ -1,89 +1,170 @@
 #!/bin/bash
-# Packages build/GhostWriter.app into a distributable .dmg.
+# Packages build/GhostWriter.app into a styled, drag-to-install .dmg:
+# a custom background with an arrow to Applications, positioned icons, a
+# branded volume icon, and hidden window chrome.
 #
-# IMPORTANT: this produces an AD-HOC SIGNED disk image. Gatekeeper will block it
-# on any Mac but the one that built it — see the warning printed at the end and
-# BUILD.md step 6. Proper distribution needs a Developer ID certificate and
-# notarization; this script is for sharing with people you can also send
-# instructions to.
+# IMPORTANT: the app inside is only as trusted as its signature. An ad-hoc or
+# "Apple Development" build is blocked by Gatekeeper on every Mac but the one
+# that built it — run Scripts/notarize.sh with a Developer ID for a build that
+# opens cleanly elsewhere.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 APP="$ROOT/build/GhostWriter.app"
-NAME="GhostWriter"
+VOLNAME="Ghost Writer"
+# The app is copied into the image under its display name. Only the .app folder
+# is renamed; CFBundleExecutable still points at the "GhostWriter" binary, so
+# the label the user drags reads "Ghost Writer" while the bundle stays valid.
+APPNAME="Ghost Writer.app"
 VERSION="$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" \
 	"$APP/Contents/Info.plist" 2>/dev/null || echo "0.1")"
-DMG="$ROOT/build/${NAME}-${VERSION}.dmg"
+DMG="$ROOT/build/GhostWriter-${VERSION}.dmg"
+RW="$(mktemp -u).dmg"
 STAGE="$(mktemp -d)"
-trap 'rm -rf "$STAGE"' EXIT
+BACKGROUND="$ROOT/Resources/dmg-background.tiff"
+
+cleanup() {
+	[ -n "${DEVICE:-}" ] && hdiutil detach "$DEVICE" -quiet 2>/dev/null || true
+	rm -rf "$STAGE" "$RW"
+}
+trap cleanup EXIT
 
 cd "$ROOT"
 
 [ -d "$APP" ] || { echo "error: no app at $APP — run Scripts/build-app.sh first" >&2; exit 1; }
 
+# ---------------------------------------------------------------------------
+# Assemble the staging tree
+# ---------------------------------------------------------------------------
+
 echo "==> Staging"
-cp -R "$APP" "$STAGE/"
+cp -R "$APP" "$STAGE/$APPNAME"
 
 # Running the app accrues extended attributes that were not there at signing
 # time — TCC writes com.apple.macl onto a bundle holding a permission, and
 # Finder adds its own. codesign --strict rejects a bundle carrying them. Strip
 # them from the COPY: they are not covered by the signature, so removing them
-# leaves it valid, and the original stays untouched for local runs.
-xattr -cr "$STAGE/GhostWriter.app"
+# leaves it valid, and the original stays untouched for local runs. Renaming the
+# .app folder does not touch the signature — the folder name is not sealed.
+xattr -cr "$STAGE/$APPNAME"
 
 echo "==> Verifying signature before packaging"
-codesign --verify --deep --strict "$STAGE/GhostWriter.app" || {
+codesign --verify --deep --strict "$STAGE/$APPNAME" || {
 	echo "error: app fails signature verification; packaging it would ship a broken build" >&2
 	exit 1
 }
-# The drag-to-install convention. Without this the user has to know to move it
-# to /Applications themselves, and an app run from the mounted image will lose
-# its Accessibility grant every time the image is remounted.
+
 ln -s /Applications "$STAGE/Applications"
 
-# A README the recipient will actually see when the image mounts.
-cat > "$STAGE/READ ME FIRST.txt" <<'NOTE'
-Ghost Writer — installation
+# No README file on the volume by design — it clutters the window, and the one
+# thing a first-time user must know (the Gatekeeper "Open Anyway" step) is baked
+# into the background image, on screen exactly when they hit the block. The full
+# instructions live in the GitHub release notes.
 
-This build is not notarized by Apple, so macOS blocks it by default. It is not
-damaged, and nothing is wrong with the download. Notarization requires a paid
-Apple Developer account, which this build does not have.
+mkdir "$STAGE/.background"
+if [ -f "$BACKGROUND" ]; then
+	cp "$BACKGROUND" "$STAGE/.background/background.tiff"
+else
+	echo "warning: no $BACKGROUND — DMG will have a plain background" >&2
+	echo "         regenerate with: Scripts/make-dmg-background.swift + tiffutil" >&2
+fi
 
-Because of that, installing takes one extra step.
+# Volume icon: reuse the app icon so the mounted disk and the .dmg itself carry
+# the brand rather than the generic image.
+[ -f "$ROOT/Resources/GhostWriter.icns" ] && \
+	cp "$ROOT/Resources/GhostWriter.icns" "$STAGE/.VolumeIcon.icns"
 
-1. Drag GhostWriter.app onto the Applications folder shown here.
-2. Try to open it from Applications. macOS will refuse.
-3. Open  System Settings > Privacy & Security  and scroll down. There will be
-   a message about GhostWriter being blocked, with an "Open Anyway" button.
-   Click it, then confirm.
+# ---------------------------------------------------------------------------
+# Create a writable image, style it, then compress
+# ---------------------------------------------------------------------------
 
-Note: right-clicking the app and choosing Open no longer works on macOS 15 and
-later. "Open Anyway" in System Settings is the supported route.
+# Size the image from its contents plus slack; a too-small image fails to
+# create, a too-large one wastes download bytes (UDZO reclaims most of it).
+SIZE_MB=$(( $(du -sm "$STAGE" | cut -f1) + 24 ))
 
-If you prefer the Terminal, this does the same thing in one command:
+# A volume of the same name already mounted — a stale run, or the user's own
+# downloaded copy — would force this one to mount as "Ghost Writer 1", and the
+# styling below addresses the disk by name. Detach it first.
+if [ -d "/Volumes/$VOLNAME" ]; then
+	echo "==> Detaching an existing '$VOLNAME' volume"
+	hdiutil detach "/Volumes/$VOLNAME" -force >/dev/null 2>&1 || true
+	sleep 1
+fi
 
-    xattr -dr com.apple.quarantine /Applications/GhostWriter.app
+# A blank writable image, populated by copy. Creating with -srcfolder produces
+# an image that mounts read-only on recent macOS, which fails the styling. A
+# blank image is read-write by default; passing -format there is rejected.
+echo "==> Creating writable image (${SIZE_MB} MB)"
+rm -f "$RW"
+hdiutil create -size "${SIZE_MB}m" -fs HFS+ -volname "$VOLNAME" "$RW" >/dev/null
 
-Only do this for software you trust. Ghost Writer asks for Accessibility
-permission, which lets it read what you type — that is a serious permission to
-grant to an app Apple has not verified. If you are not comfortable with that,
-do not install this build.
+echo "==> Mounting"
+DEVICE="$(hdiutil attach "$RW" -nobrowse -noautoopen \
+	| grep -Eo '^/dev/disk[0-9]+' | head -1)"
+MOUNT="/Volumes/$VOLNAME"
+sleep 1
 
-What it needs to work:
+# ditto preserves the Applications symlink, the dot-directories and resource
+# forks; a plain cp -R would not carry all of them.
+ditto "$STAGE" "$MOUNT"
 
-  - Accessibility permission. It asks on first launch and explains why. It
-    never reads password fields, terminals, or password managers.
-  - Your own OpenAI API key, with credit on the account. Text goes directly
-    from your Mac to OpenAI; there is no Ghost Writer server.
-NOTE
+# Custom volume icon needs the folder's "has custom icon" bit set.
+if [ -f "$STAGE/.VolumeIcon.icns" ]; then
+	SetFile -a C "$MOUNT" 2>/dev/null \
+		|| /Applications/Xcode.app/Contents/Developer/usr/bin/SetFile -a C "$MOUNT" 2>/dev/null \
+		|| echo "note: could not set volume icon bit (SetFile unavailable)" >&2
+fi
 
-echo "==> Building disk image"
+# Finder styling. Best-effort: it drives Finder over Apple events, which needs a
+# GUI session and can be unavailable (headless CI, no Automation permission). A
+# failure here must not fail the build — the image is fully functional without
+# the styling, just plain.
+style_window() {
+	osascript <<-EOF
+		tell application "Finder"
+			tell disk "$VOLNAME"
+				open
+				set current view of container window to icon view
+				set toolbar visible of container window to false
+				set statusbar visible of container window to false
+				-- Frame is 660 wide; height is content (410) plus the title bar.
+				set the bounds of container window to {200, 120, 860, 558}
+				set opts to the icon view options of container window
+				set arrangement of opts to not arranged
+				set icon size of opts to 112
+				set text size of opts to 12
+				set background picture of opts to file ".background:background.tiff"
+				set position of item "$APPNAME" of container window to {180, 210}
+				set position of item "Applications" of container window to {480, 210}
+				close
+				open
+				update without registering applications
+				delay 1
+			end tell
+		end tell
+	EOF
+}
+
+echo "==> Styling window"
+if [ -n "${CI:-}" ]; then
+	# Skip on CI deliberately: driving Finder over Apple events needs an
+	# interactive session, and on a headless runner it can hang rather than
+	# fail. The image is fully functional unstyled, which is all CI verifies.
+	echo "    skipped (CI has no interactive Finder session)"
+elif style_window >/dev/null 2>&1; then
+	echo "    styled"
+else
+	echo "    warning: Finder styling unavailable; shipping a functional plain image" >&2
+fi
+
+sync
+echo "==> Detaching"
+hdiutil detach "$DEVICE" -quiet
+DEVICE=""
+
+echo "==> Compressing"
 rm -f "$DMG"
-hdiutil create \
-	-volname "Ghost Writer" \
-	-srcfolder "$STAGE" \
-	-ov -format UDZO \
-	"$DMG" >/dev/null
+hdiutil convert "$RW" -format UDZO -imagekey zlib-level=9 -o "$DMG" >/dev/null
 
 echo "==> Signing disk image (ad-hoc)"
 codesign --force --sign - "$DMG"
@@ -93,17 +174,11 @@ echo "==> Built $DMG ($SIZE)"
 echo
 cat <<'WARN'
     ---------------------------------------------------------------
-    THIS BUILD IS AD-HOC SIGNED AND NOT NOTARIZED.
+    The app inside is signed for LOCAL USE unless it was built with
+    a Developer ID. Anyone else will hit Gatekeeper on first launch;
+    the background tells them how to proceed (Open Anyway).
 
-    Anyone you send it to WILL hit Gatekeeper. They must right-click
-    -> Open, or strip the quarantine attribute by hand. The mounted
-    image includes instructions, but expect questions.
-
-    For real distribution you need:
-      - Apple Developer Program membership ($99/yr)
-      - codesign with "Developer ID Application: NAME (TEAMID)"
-      - xcrun notarytool submit + xcrun stapler staple
-
-    See BUILD.md step 6.
+    For a build that opens cleanly on any Mac:
+      Scripts/notarize.sh   (needs a paid Developer ID + notary creds)
     ---------------------------------------------------------------
 WARN

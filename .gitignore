@@ -15,3 +15,8 @@ Resources/GhostWriter.iconset/
 
 # macOS
 .DS_Store
+
+# Intermediate DMG background bitmaps — the combined .tiff IS committed so a
+# fresh clone / CI can package without running the generator.
+Resources/dmg-background.png
+Resources/dmg-background@2x.png
